@@ -76,8 +76,8 @@ TPWS_OPT="
 
 NFQWS_ENABLE=0
 # redirect outgoing traffic with connbytes limiter applied in both directions.
-NFQWS_PORTS_TCP=80,443
-NFQWS_PORTS_UDP=443
+NFQWS_PORTS_TCP=80,443,1023-65535
+NFQWS_PORTS_UDP=443,1023-65535
 # PKT_OUT means connbytes dir original
 # PKT_IN means connbytes dir reply
 # this is --dpi-desync-cutoff=nX kernel mode implementation for linux. it saves a lot of CPU.
@@ -95,9 +95,14 @@ NFQWS_UDP_PKT_IN=0
 # hostlist markers are replaced to empty string if MODE_FILTER does not satisfy
 # <HOSTLIST_NOAUTO> appends ipset/zapret-hosts-auto.txt as normal list
 NFQWS_OPT="
---filter-tcp=80 --dpi-desync=fake,multisplit --dpi-desync-split-pos=method+2 --dpi-desync-fooling=md5sig <HOSTLIST> --new
---filter-tcp=443 --dpi-desync=fake,multidisorder --dpi-desync-split-pos=1,midsld --dpi-desync-fooling=badseq,md5sig <HOSTLIST> --new
---filter-udp=443 --dpi-desync=fake --dpi-desync-repeats=6 <HOSTLIST_NOAUTO>
+--filter-udp=443 --hostlist=/opt/zapret/lists/list-general.txt --dpi-desync=fake --dpi-desync-repeats=6 --dpi-desync-fake-quic=/opt/zapret/files/fake/quic_initial_www_google_com.bin --new
+--filter-udp=50000-50100 --filter-l7=discord,stun --dpi-desync=fake --dpi-desync-repeats=6 --new
+--filter-tcp=80 --hostlist=/opt/zapret/lists/list-general.txt --dpi-desync=fake,multisplit --dpi-desync-autottl=2 --dpi-desync-fooling=md5sig --new
+--filter-tcp=443 --hostlist=/opt/zapret/lists/list-general.txt --dpi-desync=multisplit --dpi-desync-repeats=2 --dpi-desync-split-seqovl=681 --dpi-desync-split-pos=1 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello_www_google_com.bin --new
+--filter-udp=443 --ipset=/opt/zapret/ipset/ipset-all.txt --dpi-desync=fake --dpi-desync-repeats=6 --dpi-desync-fake-quic=/opt/zapret/files/fake/quic_initial_www_google_com.bin --new
+--filter-tcp=80 --ipset=/opt/zapret/ipset/ipset-all.txt --dpi-desync=fake,multisplit --dpi-desync-autottl=2 --dpi-desync-fooling=md5sig --new
+--filter-tcp=443,1023-65535 --ipset=/opt/zapret/ipset/ipset-all.txt --dpi-desync=multisplit --dpi-desync-split-seqovl=681 --dpi-desync-split-pos=1 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello_www_google_com.bin --new
+--filter-udp=1023-65535 --ipset=/opt/zapret/ipset/ipset-all.txt --dpi-desync=fake --dpi-desync-autottl=2 --dpi-desync-repeats=12 --dpi-desync-any-protocol=1 --dpi-desync-fake-unknown-udp=/opt/zapret/files/fake/quic_initial_www_google_com.bin --dpi-desync-cutoff=n2
 "
 
 # none,ipset,hostlist,autohostlist
